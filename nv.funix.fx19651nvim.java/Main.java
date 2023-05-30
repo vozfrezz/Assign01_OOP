@@ -1,37 +1,171 @@
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Random;
 import java.util.Scanner;
 
 public class Main {
-    public static void main(String args[]) {
+    public static void main(String[] args) {
         Scanner scanner = new Scanner(System.in);
-        ArrayList<String> regionCodes = new ArrayList<>();
-        int clientChoose = ClientOption(scanner);
-        String clientIdNumber = "0";
-        switch (clientChoose) {
-            case 1:
-                ValidSecurityCode(scanner);
-                clientIdNumber = GetIdentifyNumber(scanner);
+        ArrayList<String> regionCodes = initRegionCode();
+        int userSelection = ClientOption(scanner);
+        String userIDNumber;
+        switch (userSelection) {
+            case 1 -> {
+                boolean isContinue = true;
+                ValidVerificationCode(scanner);
+                userIDNumber = GetIdentifyNumber(scanner);
+                int displayOption = DisplayOption(userIDNumber, scanner);
+                do {
+                    System.out.println("Option: " + displayOption);
+                    switch (displayOption) {
+                        case 1:
+                            System.out.println("Noi sinh: " + showRegion(userIDNumber, regionCodes));
+                            break;
+                        case 2:
+                            showGenderandBirths(userIDNumber);
+                            break;
+                        case 3:
+                            System.out.println("Random number: " + showRandomNumber(userIDNumber));
+                            break;
+                        case 0:
+                            isContinue = false;
+                            break;
+                        default:
+                            System.out.println("Invalid option");
+                            break;
+                    }
+                    
+                    if (isContinue) {
+                        displayOption = DisplayOption(userIDNumber, scanner);
+                    }
+                } while (isContinue);
 
-                System.out.println("+-----------------+--------------------+--------------+");
-                System.out.println("| DIGITAL BANKING | FX19651- Beta version             |");
-                System.out.println("+-----------------+--------------------+--------------+");
-                System.out.println("| 1.Enter Citizen Identification number.             |");
-                System.out.println("| 0.Quit.                                            |");
-                System.out.println("+-----------------+--------------------+--------------+");
-                System.out.println("Your ID number: " + clientIdNumber);
-                System.out.println("\t| 1. Kiem tra noi sinh");
-                System.out.println("\t| 2. Kiem tra tuoi,gioi tinh");
-                System.out.println("\t| 3. Kiem tra so ngau nhien");
-                System.out.println("\t| 0. Thoat");
-
-                break;
-            case 0:
-                System.exit(0);
-                break;
+            }
+            case 0 -> System.exit(0);
         }
+    }
 
-        ////////////////////
+    public static int ClientOption(Scanner myScanner) {
+        int menuOption;
+        do {
+            System.out.println("+-----------------+--------------------+--------------+");
+            System.out.println("| DIGITAL BANKING | FX19651- Beta version             |");
+            System.out.println("+-----------------+--------------------+--------------+");
+            System.out.println("| 1.Enter Citizen Identification DisplayOptionber.    |");
+            System.out.println("| 0.Quit.                                             |");
+            System.out.println("+-----------------+--------------------+--------------+");
+
+            System.out.println("Enter option: ");
+            menuOption = myScanner.nextInt();
+            myScanner.nextLine();
+        } while (menuOption != 0 && menuOption != 1);
+        return menuOption;
+    }
+
+    public static void ValidVerificationCode(Scanner sc) {
+        String characters = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+        Random rng = new Random();
+        int length = 5;
+        boolean match = false;
+        char[] text = new char[length];
+        char[] confirmtext;
+        do {
+            for (int i = 0; i < length; i++) {
+                text[i] = characters.charAt(rng.nextInt(characters.length()));
+            }
+            System.out.println("+-----------------+--------------------+--------------+");
+            System.out.print("The verification code: ");
+            for (int i = 0; i < length; i++) {
+                System.out.print(text[i]);
+            }
+
+            System.out.println("\nEnter the code: ");
+            String userInput = sc.next();
+            confirmtext = userInput.toCharArray();
+            if (Arrays.equals(confirmtext, text)) {
+                match = true;
+            } else {
+                System.out.println("Invalid verification code. Please enter again.");
+            }
+        } while (!match);
+
+    }
+
+    public static String GetIdentifyNumber(Scanner idScanner) {
+        String clientId;
+        do {
+            System.out.println("+-----------------+--------------------+--------------+");
+            System.out.println("Enter your ID: ");
+            clientId = idScanner.next();
+            if (clientId.length() != 12 || !clientId.matches("\\d+")) {
+                System.out.println("Invalid ID. Please enter a 12-digit numeric ID.");
+            }
+        } while (clientId.length() != 12 || !clientId.matches("\\d+"));
+        return clientId;
+    }
+
+    public static int DisplayOption(String userIDNumber, Scanner scanner) {
+        int menuOption;
+        do {
+            System.out.println("+-----------------+--------------------+--------------+");
+            System.out.println("| DIGITAL BANKING | FX19651- Beta version             |");
+            System.out.println("+-----------------+--------------------+--------------+");
+            System.out.println("| 1.Enter Citizen Identification number.              |");
+            System.out.println("| 0.Quit.                                             |");
+            System.out.println("+-----------------+--------------------+--------------+");
+            System.out.println("Your ID number: " + userIDNumber);
+            System.out.println("\t| 1. Kiem tra noi sinh");
+            System.out.println("\t| 2. Kiem tra tuoi,gioi tinh");
+            System.out.println("\t| 3. Kiem tra so ngau nhien");
+            System.out.println("\t| 0. Thoat");
+            System.out.println("Nhap vao lua chon:");
+            menuOption = scanner.nextInt();
+        } while (menuOption < 0 || menuOption > 3);
+        scanner.nextLine();
+        return menuOption;
+    }
+
+    public static String showRegion(String clientId, ArrayList<String> regionCodes) {
+        String getRegion = clientId.substring(0, 2);
+        String birthPlace = "0", extraRegionCodes;
+        for (String regionCode : regionCodes) {
+            extraRegionCodes = regionCode.substring(0, 2);// lay ra ma tinh trong arraylist
+            int strlen = regionCode.length();
+            String regionName = regionCode.substring(4, strlen);
+            if (getRegion.equals(extraRegionCodes)) {
+                birthPlace = regionName;
+                break;
+            }
+        }
+        return birthPlace;
+    }
+
+    public static void showGenderandBirths(String clientId) {
+
+        int getGender = Character.getNumericValue(clientId.charAt(3));
+
+        String getBirths = clientId.substring(4, 6);
+        switch (getGender) {
+            case 0 -> System.out.println("Gender: Male - Birth: 19" + getBirths);
+            case 1 -> System.out.println("Gender: Female - Birth: 19" + getBirths);
+            case 2 -> System.out.println("Gender: Male - Birth: 20" + getBirths);
+            case 3 -> System.out.println("Gender: Female - Birth: 20" + getBirths);
+            case 4 -> System.out.println("Gender: Male - Birth: 21" + getBirths);
+            case 5 -> System.out.println("Gender: Female - Birth: 21" + getBirths);
+            case 6 -> System.out.println("Gender: Male - Birth:22" + getBirths);
+            case 7 -> System.out.println("Gender: Female - Birth: 22" + getBirths);
+            case 8 -> System.out.println("Gender: Male - Birth: 23" + getBirths);
+            case 9 -> System.out.println("Gender: Female - Birth: 23" + getBirths);
+        }
+    }
+
+    public static String showRandomNumber(String clientId) {
+
+        return clientId.substring(6, 12);
+    }
+
+    public static ArrayList<String> initRegionCode() {
+        ArrayList<String> regionCodes = new ArrayList<>();
         regionCodes.add("001,Ha Noi");
         regionCodes.add("002,Ha Giang");
         regionCodes.add("004,Cao Bang");
@@ -95,122 +229,7 @@ public class Main {
         regionCodes.add("095,Bac Lieu");
         regionCodes.add("096,Ca Mau");
 
-    }
-
-    public static int ClientOption(Scanner myScanner) {
-        int num;
-        do {
-            System.out.println("+-----------------+--------------------+--------------+");
-            System.out.println("| DIGITAL BANKING | FX19651- Beta version             |");
-            System.out.println("+-----------------+--------------------+--------------+");
-            System.out.println("| 1.Enter Citizen Identification number.             |");
-            System.out.println("| 0.Quit.                                            |");
-            System.out.println("+-----------------+--------------------+--------------+");
-
-            System.out.println("Enter number: ");
-            num = myScanner.nextInt();
-        } while (num != 0 && num != 1);
-        return num;
-    }
-
-    public static void ValidSecurityCode(Scanner sc) {
-        Random random = new Random();
-        int securityNumber, confirmSec;
-        do {
-            securityNumber = random.nextInt(1000);
-            System.out.println("The secuirty number: " + securityNumber);
-            System.out.println(" Nhap ma xac minh ben tren: ");
-            confirmSec = sc.nextInt();
-        } while (securityNumber != confirmSec);
-
-    }
-
-    // kiem tra ky lai doan code nay,
-    public static String GetIdentifyNumber(Scanner idScanner) {
-        int isIdValid = 0;
-        String clientId;
-        do {
-            System.out.println("Enter your ID: ");
-            clientId = idScanner.next();
-            if (clientId.length() != 12) {
-                isIdValid = 1;
-            } else {
-                for (int i = 0; i < clientId.length(); i++) {
-                    char ch = clientId.charAt(i);
-                    if (!Character.isDigit(ch)) {
-                        isIdValid = 1;
-                        break;
-                    }
-                }
-            }
-        } while (isIdValid == 1);
-        return clientId;
-    }
-
-    //
-    public static String showRegion(String clientId, ArrayList<String> regionCodes) {
-        String getRegion = clientId.substring(0, 2);
-        String quequan = "0";
-        for (int i = 0; i < regionCodes.size(); i++) {
-            String matinhthanhpho = (regionCodes.get(i)).substring(0, 2);// lay ra ma tinh trong arraylist
-            int strlen = (regionCodes.get(i)).length();
-            String tentinhthanhpho = (regionCodes.get(i)).substring(3, strlen);
-            if (getRegion.equals(matinhthanhpho)) {
-                quequan = tentinhthanhpho;
-                break;
-            }
-            ;
-        }
-        return quequan;
-    }
-
-    public String ShowInfoClient() {
-
-        char getGender = clientId.charAt(3);
-        String getBirths = clientId.substring(4, 6);
-        String getRadomId = clientId.substring(7, 11);
-        switch (getGender) {
-            case 0:
-                System.out.println("Gioi tinh : Nam; sinh nam:19" + getBirths);
-                System.out.println("So ngau nhien:" + getRadomId);
-                break;
-            case 1:
-                System.out.println("Gioi tinh : Nu; sinh nam:19" + getBirths);
-                System.out.println("So ngau nhien:" + getRadomId);
-                break;
-            case 2:
-                System.out.println("Gioi tinh : Nam; sinh nam:20" + getBirths);
-                System.out.println("So ngau nhien:" + getRadomId);
-                break;
-            case 3:
-                System.out.println("Gioi tinh : Nu; sinh nam:20" + getBirths);
-                System.out.println("So ngau nhien:" + getRadomId);
-                break;
-            case 4:
-                System.out.println("Gioi tinh : Nam; sinh nam:21" + getBirths);
-                System.out.println("So ngau nhien:" + getRadomId);
-                break;
-            case 5:
-                System.out.println("Gioi tinh : Nu; sinh nam:21" + getBirths);
-                System.out.println("So ngau nhien:" + getRadomId);
-                break;
-            case 6:
-                System.out.println("Gioi tinh : Nam; sinh nam:22" + getBirths);
-                System.out.println("So ngau nhien:" + getRadomId);
-                break;
-            case 7:
-                System.out.println("Gioi tinh : Nu; sinh nam:22" + getBirths);
-                System.out.println("So ngau nhien:" + getRadomId);
-                break;
-            case 8:
-                System.out.println("Gioi tinh : Nam; sinh nam:23" + getBirths);
-                System.out.println("So ngau nhien:" + getRadomId);
-                break;
-            case 9:
-                System.out.println("Gioi tinh : Nu; sinh nam:23" + getBirths);
-                System.out.println("So ngau nhien:" + getRadomId);
-                break;
-        }
+        return regionCodes;
     }
 
 }
